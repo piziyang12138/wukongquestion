@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.neusoft.mapper.UserMapper">
+    <insert id="addUser" parameterType="User">
+        <selectKey keyProperty="id" order="AFTER" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into user(username,pwd,picpath) values(#{username},#{pwd},#{picpath})
+    </insert>
+
+    <select id="isUserExist" parameterType="User" resultType="User">
+        select * FROM `user` where username=#{username}
+    </select>
+
+    <select id="queryUserById" parameterType="int" resultType="UserInfo">
+        select user.* ,(select count(*) from commentinfo where `user`.id=commentinfo.userid)  as rescount,
+        (select count(*) from follower where followid = `user`.id) as followcount,(select count(*) from follower
+        where followedid = `user`.id) as followedcount FROM user
+        left join commentinfo on user.id = commentinfo.userid where id = #{value} GROUP BY id
+    </select>
+</mapper>

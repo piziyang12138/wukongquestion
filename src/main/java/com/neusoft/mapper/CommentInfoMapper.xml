@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.neusoft.mapper.CommentInfoMapper">
+
+    <insert id="addComment" parameterType="commentinfo">
+        <selectKey keyProperty="cid" order="AFTER" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into commentinfo(userid,content,articleid,chtml) values(#{userid},#{content},#{articleid},#{chtml})
+    </insert>
+    <select id="queryCommentByAid" parameterType="int" resultType="CommentInformation">
+        SELECT commentinfo.*,`user`.picpath,`user`.username,likeorunlike.*,(SELECT count(*) FROM likeorunlike WHERE commentid = cid AND islike=1) AS likecount,
+        (SELECT count(*) FROM likeorunlike WHERE commentid = cid AND islike=0) AS unlikecount
+         FROM commentinfo
+        LEFT JOIN `user` ON commentinfo.userid = `user`.id
+        LEFT JOIN likeorunlike ON commentinfo.cid = likeorunlike.commentid
+        WHERE articleid = #{value} LIMIT 1,8
+    </select>
+
+    <select id="queryCommentInfoById" parameterType="int" resultType="CommentInformation">
+        select article.aid,article.title,commentinfo.content ,(select count(*) from article WHERE articleid = 4) as count FROM commentinfo
+        join article on commentinfo.articleid = article.aid
+        where commentinfo.userid = #{value}
+    </select>
+
+</mapper>

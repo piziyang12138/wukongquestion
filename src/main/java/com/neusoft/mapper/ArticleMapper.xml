@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.neusoft.mapper.ArticleMapper">
+    <insert id="addArticle" parameterType="Article">
+        <selectKey keyProperty="aid" order="AFTER" resultType="int">
+            select LAST_INSERT_ID()
+        </selectKey>
+        insert into article(title,userid,content,picpath,tags) values(#{title},#{userid},#{content},#{picpath},#{tags})
+    </insert>
+    <select id="isArticleExsit" resultType="Article" parameterType="Article">
+        select * FROM article where title=#{title}
+    </select>
+    <select id="queryArticleByPage" resultType="ArticleInfo">
+        SELECT (select count(*) FROM collection where articleid = aid) as collection_count,article.*,commentinfo.chtml,(SELECT count(*) FROM commentinfo WHERE articleid = aid) AS rescount,
+        `user`.username,`user`.picpath as upicpath,commentinfo.userid as comment_userid,commentinfo.cid,
+        (select count(*) from likeorunlike where commentid = cid and islike=1) as likecount,
+        (select count(*) from likeorunlike where commentid = cid and islike=0) as unlikecount
+        FROM article
+        LEFT JOIN commentinfo ON article.aid = commentinfo.articleid
+        LEFT JOIN user ON commentinfo.userid = user.id
+        GROUP BY aid order BY aid DESC LIMIT 1,8
+    </select>
+    <select id="queryArticleByTitle" parameterType="string" resultType="Article">
+        select * from article where title=#{value}
+    </select>
+
+    <select id="queryAllArticle" resultType="Article">
+        select * from article
+    </select>
+</mapper>
